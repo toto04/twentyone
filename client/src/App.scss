@@ -1,0 +1,218 @@
+.App {
+    position: relative;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    flex-direction: column;
+    color: white;
+    // background-color: black;
+}
+
+.board {
+    width: 100%;
+    height: 100%;
+}
+
+// .button {
+//     background-color: #dc143c;
+//     font-weight: bold;
+//     font-size: 24px;
+//     padding: 30px 50px;
+//     width: 160px;
+//     text-align: center;
+//     margin: 5px;
+//     border-radius: 8px;
+//     cursor: pointer;
+
+//     &.disabled {
+//         color: #ccc;
+//         cursor: not-allowed;
+//         background-color: #960e29;
+//     }
+// }
+
+.table {
+    width: 100%;
+    display: flex;
+}
+
+.controls {
+    display: inline-block;
+    position: relative;
+    left: auto;
+    right: 0;
+}
+
+body {
+    backdrop-filter: saturate(0.8) brightness(0.8) blur(2px);
+    background-image: url(textures/tavolo.jpg) !important;
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: 100vh;
+    margin: 0;
+}
+
+#side {
+    background-image: url("textures/bet counter.png") !important;
+    position: absolute !important;
+    width: 20% !important;
+    height: 100%;
+    box-shadow: 0px 0px 80px 80px #000;
+    background-size: cover;
+    top: 0px;
+}
+
+.lives_opp {
+    top: 17%;
+    left: 5%;
+    position: absolute !important;
+    width: 100%;
+}
+
+.bet_opp {
+    position: absolute;
+    width: 50%;
+    left: 30%;
+}
+
+.lives_you {
+    top: 85%;
+    left: 5%;
+    position: absolute !important;
+    width: 100%;
+}
+
+.bet_you {
+    position: absolute;
+    width: 50%;
+    left: 30%;
+    top: 68%;
+}
+
+.trump_box {
+    z-index: 10;
+    position: absolute !important;
+    width: 25%;
+    right: 0px;
+    top: 0px;
+}
+
+.trump_cards_container {
+    padding: 10%;
+    width: 100%;
+    box-sizing: border-box;
+    position: absolute;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.trump_card {
+    width: 15%;
+    margin: 2.5%;
+}
+
+.board {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    height: 100%;
+}
+
+.card {
+    background-image: url(./textures/frame.png);
+    background-size: cover;
+    width: 12%;
+    min-height: calc(0.7 * 0.12 * 1.37 * 100vw);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 5;
+
+    img {
+        width: 70%;
+    }
+}
+
+.trump_frame {
+    width: 10%;
+}
+
+.table,
+.trumptable {
+    width: 100%;
+}
+
+.opp {
+    width: 70%;
+    margin-left: 30%;
+    padding-top: 3%;
+}
+
+.line {
+    width: 75%;
+    margin-left: 25%;
+}
+
+.you {
+    width: 70%;
+    margin-left: 30%;
+    padding-bottom: 3%;
+}
+
+.button_container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-end;
+}
+
+.button {
+    z-index: 8;
+    height: 100px;
+    width: 100px;
+    background-repeat: no-repeat;
+    background-size: cover;
+    margin-right: 50px;
+    margin-bottom: 40px;
+    border-radius: 50%;
+    background-color: #00000055;
+    box-shadow: 5px 10px 20px 10px #000000aa;
+    cursor: pointer;
+}
+
+.disabled {
+    cursor: not-allowed;
+}
+
+#show_trump {
+    background-image: url(/textures/show_trump.png);
+    border-radius: 0 !important;
+}
+
+#hit {
+    background-image: url(/textures/hit.png);
+}
+
+#stand {
+    background-image: url(/textures/stand.png);
+}
+
+.message {
+    z-index: 15;
+    position: absolute;
+    left: 30%;
+    top: 24px;
+    background-color: #000000aa;
+    padding: 24px;
+    font-size: 24px;
+    border-radius: 16px;
+    p {
+        margin: 0;
+    }
+}
