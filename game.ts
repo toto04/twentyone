@@ -26,27 +26,31 @@ export class Game {
     turn: number = 0
     currentTarget = 21
 
-    deck: Deck
+    deck: Deck = []
     table: Table = [[], []]
 
     trumpDecks: TrumpTable = [[], []]
     trumpTable: TrumpTable = [[], []]
 
     constructor() {
-        this.deck = shuffle([...card])
-
-        this.table[0].push(this.deck.pop()!)
-        this.table[0].push(this.deck.pop()!)
-        this.table[1].push(this.deck.pop()!)
-        this.table[1].push(this.deck.pop()!)
-    
+        // initialize trump decks on startup
         for (let i = 0; i < 4; i++) {
             this.trumpDecks[0].push(drawSpecialCard())
             this.trumpDecks[1].push(drawSpecialCard())
         }
     }
 
+    initializeTable = () => {
+        this.deck = shuffle([...card])
+
+        this.table[0].push(this.deck.pop()!)
+        this.table[0].push(this.deck.pop()!)
+        this.table[1].push(this.deck.pop()!)
+        this.table[1].push(this.deck.pop()!)
+    }
+
     start = () => {
+        this.initializeTable()
         this.playing = true
     }
 

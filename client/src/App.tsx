@@ -27,7 +27,8 @@ interface GameState {
 interface GameMessage<T = any> {
     command: string
     info: {
-        id: number
+        gameCode?: string
+        id?: number
     }
     data: T
 }
@@ -47,14 +48,38 @@ function Button(props: { text?: string, onClick: () => void, disabled?: boolean,
 }
 
 function App() {
+    let [gameState, setGamestate] = useState<GameState>()
+    let [gameMessage, setGameMessage] = useState<string | undefined>()
+    let [waiting, setWaiting] = useState(false)
+    let [gameCode, setGameCode] = useState('')
+    let [inviteURL, setInviteURL] = useState('')
+
     useEffect(() => {
+        if (playerId === 1) sendCommand('connect')
+    }, [gameCode])
+
+    useEffect(() => {
+        let gc = window.location.href.match(new RegExp(`http://localhost:3000/play/((?:[A-Z]|[a-z]){6})`))?.[1]
+        if (gc) {
+            setGameCode(gc)
+            setWaiting(true)
+            playerId = 1
+        }
+
         ws.addEventListener('message', ev => {
             let message: GameMessage = JSON.parse(ev.data)
-            let { command, data } = message
+            let { command, info, data } = message
             let msgTimeout: any
             switch (command) {
+                case 'invite':
+                    setInviteURL(data.inviteURL)
+                    setGameCode(info.gameCode ?? '')
+                    break
+
                 case 'update':
                     setGamestate(data)
+                    setWaiting(false)
+                    setInviteURL('')
                     break
 
                 case 'message':
@@ -66,16 +91,14 @@ function App() {
                     break
             }
         })
-        ws.addEventListener('open', ev => {
-            setWaiting(false)
-        })
-    })
+    }, [])
 
     sendCommand = (command: string, data?: any) => {
         console.log('sending ' + command + ' - ' + playerId)
         let message: GameMessage = {
             command,
             info: {
+                gameCode,
                 id: playerId
             },
             data
@@ -83,10 +106,7 @@ function App() {
         ws.send(JSON.stringify(message))
     }
 
-    let [gameState, setGamestate] = useState<GameState>()
-    let [gameMessage, setGameMessage] = useState<string | undefined>()
-    let [waiting, setWaiting] = useState(false)
-
+    // GAME BOARD
     if (gameState?.playing) return <div className="App">
         {gameMessage
             ? <div className="message">
@@ -97,6 +117,7 @@ function App() {
         <GameBoard gameState={gameState} />
     </div>
 
+    // END GAME
     if (gameState?.winner !== undefined) {
         return <div className="App">
             <p>opp cards: {gameState.table[gameState.id ? 0 : 1].join(', ')} ({gameState.points![gameState.id ? 0 : 1]})</p>
@@ -107,6 +128,15 @@ function App() {
         </div>
     }
 
+    // INVITATION
+    if (inviteURL) return <div className="App">
+        <h2 className="invite-url">{inviteURL}</h2>
+        <button className="copy" onClick={() => {
+            navigator.clipboard.writeText(inviteURL)
+        }}>copy</button>
+        <h1>Waiting for others to join...</h1>
+    </div>
+
     if (waiting) return <div className="App">
         <h1>waiting...</h1>
     </div>
@@ -114,14 +144,13 @@ function App() {
     return <div className="App">
         <Button text="new game" onClick={async () => {
             playerId = 0
-            setWaiting(true)
             sendCommand('newgame')
         }} />
-        <Button text="play" onClick={async () => {
-            playerId = 1
+        {/* <Button text="play" onClick={async () => {
+            
             setWaiting(true)
             sendCommand('connect')
-        }} />
+        }} /> */}
     </div>
 }
 

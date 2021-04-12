@@ -9,87 +9,127 @@ const wss = new WebSocket.Server({ server })
 
 app.use(express.json())
 
-let game: Game | undefined
+let games = new Map<string, {
+    players: WebSocket[]
+    istance: Game
+}>()
+
+// let game: Game | undefined
 
 interface GameMessage<T = any> {
     command: string
-    info?: {
-        id: number
+    info: {
+        gameCode?: string
+        id?: number
     }
     data: T
 }
 
-let updateGameState = () => {
-    gamers.forEach((ws, i) => {
+let updateGameState = (gameCode: string) => {
+    let game = games.get(gameCode)
+    if (!game) throw 'unknown gamecode'
+    game.players.forEach((ws, i) => {
         let update: GameMessage = {
             command: 'update',
-            data: game?.getGameState(i)
+            info: { gameCode },
+            data: game!.istance.getGameState(i)
         }
         ws.send(JSON.stringify(update))
     })
 }
 
-let sendMessage = (message: string, inverse?: boolean) => {
-    if (!game) return
+let sendMessage = (gameCode: string, message: string, inverse?: boolean) => {
+    let game = games.get(gameCode)
+    if (!game) throw 'unknown gamecode'
     let msg: GameMessage = {
         command: 'message',
+        info: { gameCode },
         data: {
             message
         }
     }
-    gamers[inverse ? (game.turn ? 0 : 1) : game.turn].send(JSON.stringify(msg))
+    game.players[inverse ? (game.istance.turn ? 0 : 1) : game.istance.turn].send(JSON.stringify(msg))
 }
 
-let gamers: WebSocket[] = []
+// let gamers: WebSocket[] = []
 
 wss.on('connection', ws => {
     ws.on('message', msg => {
         let message: GameMessage = JSON.parse(msg.toString())
         let { command, info } = message
+        let gameCode = info.gameCode?.toUpperCase() ?? ''
+        let game = games.get(gameCode)
 
         switch (command) {
             case 'newgame':
-                game = new Game()
-                gamers[0] = ws
-                console.log('created new game, waiting for other to join')
+                gameCode = getNewGameCode()
+                games.set(gameCode, {
+                    istance: new Game(),
+                    players: [ws]
+                })
+                let inv: GameMessage = {
+                    command: 'invite',
+                    info: { gameCode },
+                    data: {
+                        inviteURL: `http://localhost:3000/play/${gameCode}`
+                    }
+                }
+                ws.send(JSON.stringify(inv))
+                console.log(`created new game ${gameCode}, waiting for other to join`)
                 break
 
             case 'connect':
                 if (game) {
-                    gamers[1] = ws
-                    game.start()
-                    updateGameState()
-                    console.log('starting!11')
+                    game.players[1] = ws
+                    game.istance.start()
+                    updateGameState(gameCode)
+                    console.log(`starting game ${gameCode}!`)
                 }
                 break
 
             case 'hit':
-                if (!game || info?.id !== game.turn) break
+                if (!game || info?.id !== game.istance.turn) break
                 console.log(`player ${info.id} played hit`)
-                game.giveCard()
-                sendMessage('L\'avversario ha pescato una carta! È il tuo turno')
-                updateGameState()
+                game.istance.giveCard()
+                sendMessage(gameCode, 'L\'avversario ha pescato una carta! È il tuo turno')
+                updateGameState(gameCode)
                 break
 
             case 'stand':
-                if (!game || info?.id !== game.turn) break
+                if (!game || info?.id !== game.istance.turn) break
                 console.log(`player ${info.id} played stand`)
-                game.stand()
-                sendMessage('L\'avversario ha passato! È il tuo turno')
-                updateGameState()
+                game.istance.stand()
+                sendMessage(gameCode, 'L\'avversario ha passato! È il tuo turno')
+                updateGameState(gameCode)
                 break
 
             case 'trump':
-                if (!game || info?.id !== game.turn) break
+                if (!game || info?.id !== game.istance.turn) break
                 let { slot } = message.data
                 console.log(`player ${info.id} played trump (slot ${slot})`)
-                let t = game.useTrumpCard(slot)
-                sendMessage(`L'avversario ha usato la carta ${t}`, true)
-                updateGameState()
+                let t = game.istance.useTrumpCard(slot)
+                sendMessage(gameCode, `L'avversario ha usato la carta ${t}`, true)
+                updateGameState(gameCode)
                 break
         }
     })
 })
+
+let getNewGameCode = () => {
+    let gen = () => {
+        let alp = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        let s = ''
+        for (let i = 0; i < 6; i++) {
+            let char = alp.charAt(Math.floor(Math.random() * alp.length))
+            s += char
+        }
+        return s
+    }
+
+    let gc = gen()
+    while (games.has(gc)) gc = gen()
+    return gc
+}
 
 app.use(express.static('client/build'))
 
