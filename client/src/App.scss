@@ -111,6 +111,7 @@ body {
 
 .trump_card {
     width: 15%;
+    height: 15%;
     margin: 2.5%;
 }
 
@@ -140,6 +141,12 @@ body {
     width: 10%;
 }
 
+.total {
+    margin: 0;
+    padding: 8px;
+    font-size: 32px;
+}
+
 .table,
 .trumptable {
     width: 100%;
@@ -148,7 +155,6 @@ body {
 .opp {
     width: 70%;
     margin-left: 30%;
-    padding-top: 3%;
 }
 
 .line {
@@ -159,7 +165,6 @@ body {
 .you {
     width: 70%;
     margin-left: 30%;
-    padding-bottom: 3%;
 }
 
 .button_container {

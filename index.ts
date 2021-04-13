@@ -1,6 +1,6 @@
 import express from 'express'
 import { createServer } from 'http'
-import { Game, GameState } from './game'
+import { Game } from './game'
 import WebSocket from 'ws'
 
 const app = express()
@@ -14,8 +14,6 @@ let games = new Map<string, {
     istance: Game
 }>()
 
-// let game: Game | undefined
-
 interface GameMessage<T = any> {
     command: string
     info: {
@@ -27,7 +25,7 @@ interface GameMessage<T = any> {
 
 let updateGameState = (gameCode: string) => {
     let game = games.get(gameCode)
-    if (!game) throw 'unknown gamecode'
+    if (!game) throw 'unknown gamecode, 🎶 how did this happen? 🎶'
     game.players.forEach((ws, i) => {
         let update: GameMessage = {
             command: 'update',
@@ -50,8 +48,6 @@ let sendMessage = (gameCode: string, message: string, inverse?: boolean) => {
     }
     game.players[inverse ? (game.istance.turn ? 0 : 1) : game.istance.turn].send(JSON.stringify(msg))
 }
-
-// let gamers: WebSocket[] = []
 
 wss.on('connection', ws => {
     ws.on('message', msg => {
@@ -98,8 +94,12 @@ wss.on('connection', ws => {
             case 'stand':
                 if (!game || info?.id !== game.istance.turn) break
                 console.log(`player ${info.id} played stand`)
-                game.istance.stand()
-                sendMessage(gameCode, 'L\'avversario ha passato! È il tuo turno')
+                let turnEnded = game.istance.stand()
+                if (turnEnded) {
+                    let ps = `${game.istance.points![0]}/${game.istance.points![1]}`
+                    sendMessage(gameCode, `Hai vinto questo turno! (${ps})`, true)
+                    sendMessage(gameCode, `Hai perso questo turno, tocca a te (${ps})`)
+                } else sendMessage(gameCode, 'L\'avversario ha passato! È il tuo turno')
                 updateGameState(gameCode)
                 break
 

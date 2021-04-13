@@ -10,6 +10,8 @@ export interface GameState {
     winner?: number
     points?: [number, number]
     id: number
+    bets: [number, number]
+    lives: [number, number]
     table: Table
     trumpTable: TrumpTable
     trumpDeck: TrumpDeck
@@ -22,6 +24,8 @@ export class Game {
     playing: boolean = false
     winner?: number
     points?: [number, number]
+    bets: [number, number] = [1, 1]
+    lives: [number, number] = [10, 10]
     stood: [boolean, boolean] = [false, false]
     turn: number = 0
     currentTarget = 21
@@ -41,7 +45,11 @@ export class Game {
     }
 
     initializeTable = () => {
+        this.stood = [false, false]
+        this.bets = [1, 1]
+
         this.deck = shuffle([...card])
+        this.table = [[], []]
 
         this.table[0].push(this.deck.pop()!)
         this.table[0].push(this.deck.pop()!)
@@ -69,10 +77,16 @@ export class Game {
     stand = () => {
         this.stood[this.turn] = true
         this.turn = this.turn ? 0 : 1
+
         if (this.stood[0] && this.stood[1]) {
-            this.playing = false
-            this.winner = this.getWinner()
+            let l = this.getWinner() ? 0 : 1
+            this.lives[l] -= this.bets[l]
+            this.turn = l
+            this.initializeTable()
+
+            return true
         }
+        return false
     }
 
     getWinner = (): number => {
@@ -100,6 +114,8 @@ export class Game {
             winner: this.winner,
             points: this.points,
             id: filter,
+            bets: this.bets,
+            lives: this.lives,
             table: t,
             trumpDeck: this.trumpDecks[filter],
             trumpTable: this.trumpTable,

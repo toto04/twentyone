@@ -18,6 +18,8 @@ interface GameState {
     winner?: number
     points?: [number, number]
     id: number
+    bets: [number, number]
+    lives: [number, number]
     table: Table
     trumpTable: TrumpTable
     trumpDeck: TrumpDeck
@@ -59,11 +61,11 @@ function App() {
     }, [gameCode])
 
     useEffect(() => {
-        let gc = window.location.href.match(new RegExp(`http://localhost:3000/play/((?:[A-Z]|[a-z]){6})`))?.[1]
+        let gc = window.location.href.match(new RegExp(`${window.location.origin}/play/((?:[A-Z]|[a-z]){6})`))?.[1]
         if (gc) {
+            playerId = 1
             setGameCode(gc)
             setWaiting(true)
-            playerId = 1
         }
 
         ws.addEventListener('message', ev => {
@@ -94,8 +96,7 @@ function App() {
     }, [])
 
     sendCommand = (command: string, data?: any) => {
-        console.log('sending ' + command + ' - ' + playerId)
-        let message: GameMessage = {
+        let msg: GameMessage = {
             command,
             info: {
                 gameCode,
@@ -103,7 +104,11 @@ function App() {
             },
             data
         }
-        ws.send(JSON.stringify(message))
+        if (ws.readyState === ws.OPEN)
+            ws.send(JSON.stringify(msg))
+        ws.addEventListener('open', () => {
+            ws.send(JSON.stringify(msg))
+        })
     }
 
     // GAME BOARD
@@ -142,7 +147,7 @@ function App() {
     </div>
 
     return <div className="App">
-        <Button text="new game" onClick={async () => {
+        <Button text="new game" onClick={() => {
             playerId = 0
             sendCommand('newgame')
         }} />
@@ -175,14 +180,15 @@ function GameBoard(props: { gameState: GameState }) {
     return <div className="board">
         <div id="side">
             <div className="score">
-                <img className="bet_opp" src="/images/textures/bet/bet04.png" alt="bet_opp" />
-                <img className="lives_opp" src="/images/textures/lives/lives7.png" alt="lives_opp" />
-                <img className="bet_you" src="/images/textures/bet/bet06.png" alt="bet_you" />
-                <img className="lives_you" src="/images/textures/lives/lives3.png" alt="lives_you" />
+                <img className="bet_opp" src={`/images/textures/bet/bet${(props.gameState.bets[playerId ? 0 : 1] + '').padStart(2, '0')}.png`} alt="bet_opp" />
+                <img className="lives_opp" src={`/images/textures/lives/lives${10 - props.gameState.lives[playerId ? 0 : 1]}.png`} alt="lives_opp" />
+                <img className="bet_you" src={`/images/textures/bet/bet${(props.gameState.bets[playerId] + '').padStart(2, '0')}.png`} alt="bet_you" />
+                <img className="lives_you" src={`/images/textures/lives/lives${10 - props.gameState.lives[playerId]}.png`} alt="lives_you" />
             </div>
         </div>
 
         <div className="opp">
+            <p className="total">totale: ? + {props.gameState.table[playerId ? 0 : 1].reduce((s, c) => s + c, 0)}</p>
             <div className="table">
                 {oppCards}
             </div>
@@ -198,6 +204,7 @@ function GameBoard(props: { gameState: GameState }) {
             <div className="table">
                 {youCards}
             </div>
+            <p className="total">totale: {props.gameState.table[playerId].reduce((s, c) => s + c, 0)}</p>
         </div>
 
         {trumpView
@@ -249,8 +256,8 @@ function TrumpBox(props: { deck: TrumpDeck, disabled: boolean, onPlay: (slot: nu
             {props.deck.map((trumpCard, i) => <img
                 data-tip={i}
                 className={"trump_card" + (props.disabled ? ' disabled' : '')}
+                key={"trump_card_" + i}
                 onClick={() => {
-                    console.log('clisk')
                     if (!props.disabled) { props.onPlay(i) }
                 }}
                 alt={trumpCard.name}
