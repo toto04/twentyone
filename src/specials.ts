@@ -1,3 +1,4 @@
+import { TrumpCard, TrumpCardC } from 'typedefs'
 import { Game } from './game'
 export type Effect = (game: Game, playerID: number) => boolean
 
@@ -13,16 +14,6 @@ let trumpPool = [
     'exchange',
     'love_your_enemy',
 ]
-
-export interface TrumpCardC {
-    name: string
-    effect: Effect
-    description: string
-}
-
-export type TrumpCard = TrumpCardC & {
-    path: string
-}
 
 export let drawSpecialCard = () => {
     let idx = Math.floor(Math.random() * trumpPool.length)

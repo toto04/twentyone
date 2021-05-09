@@ -1,5 +1,6 @@
 import express from 'express'
 import { createServer } from 'http'
+import { GameMessage } from 'typedefs'
 import { Game } from './game'
 import WebSocket from 'ws'
 
@@ -13,15 +14,6 @@ let games = new Map<string, {
     players: WebSocket[]
     istance: Game
 }>()
-
-interface GameMessage<T = any> {
-    command: string
-    info: {
-        gameCode?: string
-        id?: number
-    }
-    data: T
-}
 
 let updateGameState = (gameCode: string) => {
     let game = games.get(gameCode)

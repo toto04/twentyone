@@ -1,22 +1,6 @@
-import { drawSpecialCard, TrumpCard } from './specials'
+import { Deck, Table, TrumpTable, GameState } from 'typedefs'
+import { drawSpecialCard } from './specials'
 
-export type Deck = number[]
-export type TrumpDeck = TrumpCard[]
-export type TrumpTable = [TrumpDeck, TrumpDeck]
-export type Table = [Deck, Deck]
-
-export interface GameState {
-    playing: boolean
-    winner?: number
-    points?: [number, number]
-    id: number
-    bets: [number, number]
-    lives: [number, number]
-    table: Table
-    trumpTable: TrumpTable
-    trumpDeck: TrumpDeck
-    turn: number
-}
 
 const card = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 

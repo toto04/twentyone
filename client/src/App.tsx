@@ -1,39 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react'
 import ReactTooltip from 'react-tooltip'
-import './App.scss';
-
-interface TrumpCard {
-    path: string
-    name: string
-    description: string
-}
-
-type Deck = number[]
-type TrumpDeck = TrumpCard[]
-type TrumpTable = [TrumpDeck, TrumpDeck]
-type Table = [Deck, Deck]
-
-interface GameState {
-    playing: boolean
-    winner?: number
-    points?: [number, number]
-    id: number
-    bets: [number, number]
-    lives: [number, number]
-    table: Table
-    trumpTable: TrumpTable
-    trumpDeck: TrumpDeck
-    turn: number
-}
-
-interface GameMessage<T = any> {
-    command: string
-    info: {
-        gameCode?: string
-        id?: number
-    }
-    data: T
-}
+import './App.scss'
+import { TrumpDeck, GameState, GameMessage } from 'typedefs'
 
 let playerId: number
 let ws = new WebSocket(`ws://${window.location.hostname}:5500`)
@@ -51,7 +19,7 @@ function Button(props: { text?: string, onClick: () => void, disabled?: boolean,
 
 function App() {
     let [gameState, setGamestate] = useState<GameState>()
-    let [gameMessage, setGameMessage] = useState<string | undefined>()
+    let [gameMessage, setGameMessage] = useState<string>()
     let [waiting, setWaiting] = useState(false)
     let [gameCode, setGameCode] = useState('')
     let [inviteURL, setInviteURL] = useState('')
@@ -268,4 +236,4 @@ function TrumpBox(props: { deck: TrumpDeck, disabled: boolean, onPlay: (slot: nu
     </div>
 }
 
-export default App;
+export default App
