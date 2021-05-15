@@ -100,7 +100,9 @@ wss.on('connection', ws => {
                 let { slot } = message.data
                 console.log(`player ${info.id} played trump (slot ${slot})`)
                 let t = game.istance.useTrumpCard(slot)
-                sendMessage(gameCode, `L'avversario ha usato la carta ${t}`, true)
+                if (t)
+                    sendMessage(gameCode, `L'avversario ha usato la carta ${t}`, true)
+                else sendMessage(gameCode, `Non puoi usare questa carta`)
                 updateGameState(gameCode)
                 break
         }

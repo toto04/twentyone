@@ -63,6 +63,11 @@ function App() {
         })
     }, [])
 
+    useEffect(() => {
+        // updates the tootip when the game is updated
+        ReactTooltip.rebuild()
+    }, [gameState])
+
     sendCommand = (command: string, data?: any) => {
         let msg: GameMessage = {
             command,
@@ -145,6 +150,29 @@ function GameBoard(props: { gameState: GameState }) {
         />)
     }
 
+    let tTable = props.gameState.trumpTable
+
+    let oppTCards: JSX.Element[] = tTable[props.gameState.id ? 0 : 1].map((card, i) => {
+        return <img
+            data-tip={`${props.gameState.id ? 0 : 1}-${i}`}
+            data-for="trump_table_tooltip"
+            className="trump_table_card"
+            key={"youtable_trump_card_" + i}
+            alt={card.name}
+            src={`/images/trump_cards/${card.path}.png`}
+        />
+    })
+    let youTCards = tTable[props.gameState.id].map((card, i) => {
+        return <img
+            data-tip={`${props.gameState.id}-${i}`}
+            data-for="trump_table_tooltip"
+            className="trump_table_card"
+            key={"youtable_trump_card_" + i}
+            alt={card.name}
+            src={`/images/trump_cards/${card.path}.png`}
+        />
+    })
+
     return <div className="board">
         <div id="side">
             <div className="score">
@@ -155,19 +183,36 @@ function GameBoard(props: { gameState: GameState }) {
             </div>
         </div>
 
+        <ReactTooltip
+            id="trump_table_tooltip"
+            place="bottom"
+            effect="solid"
+            getContent={dataTip => {
+                if (!dataTip) return
+                let a = dataTip.split('-')
+                let pId = parseInt(a[0])
+                let idx = parseInt(a[1])
+                let tc = tTable[pId][idx]
+                if (tc) return <div>
+                    <h2>{tc.name}</h2>
+                    <p>{tc.description}</p>
+                </div>
+            }}
+        />
+
         <div className="opp">
             <p className="total">totale: ? + {props.gameState.table[playerId ? 0 : 1].reduce((s, c) => s + c, 0)}</p>
             <div className="table">
                 {oppCards}
             </div>
             <div className="trumptable">
-
+                {oppTCards}
             </div>
         </div>
         <img src="/images/textures/line.png" alt="" className="line" />
         <div className="you">
             <div className="trumptable">
-
+                {youTCards}
             </div>
             <div className="table">
                 {youCards}
@@ -210,6 +255,7 @@ function TrumpBox(props: { deck: TrumpDeck, disabled: boolean, onPlay: (slot: nu
 
     return <div className="trump_box">
         <ReactTooltip
+            id="trump_box_tooltip"
             place="bottom"
             effect="solid"
             getContent={dataTip => {
@@ -223,6 +269,7 @@ function TrumpBox(props: { deck: TrumpDeck, disabled: boolean, onPlay: (slot: nu
         <div className="trump_cards_container">
             {props.deck.map((trumpCard, i) => <img
                 data-tip={i}
+                data-for="trump_box_tooltip"
                 className={"trump_card" + (props.disabled ? ' disabled' : '')}
                 key={"trump_card_" + i}
                 onClick={() => {

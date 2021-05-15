@@ -1,5 +1,5 @@
 import { Deck, Table, TrumpTable, GameState } from 'typedefs'
-import { drawSpecialCard } from './specials'
+import { drawSpecialCard, specialCards } from './specials'
 
 
 const card = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
@@ -32,6 +32,7 @@ export class Game {
         this.stood = [false, false]
         this.bets = [1, 1]
 
+        this.trumpTable = [[], []]
         this.deck = shuffle([...card])
         this.table = [[], []]
 
@@ -47,6 +48,7 @@ export class Game {
     }
 
     useTrumpCard = (n: number) => {
+        if (this.trumpTable[this.turn ? 0 : 1].find(t => t.name === specialCards.get("destroy_plus_plus")?.name)) return
         let card = this.trumpDecks[this.turn].splice(n, 1)[0]
         card.effect(this, this.turn)
         return card.name
@@ -82,11 +84,10 @@ export class Game {
 
         if (points[0] == points[1])
             return -1
-        else if (points[0] <= 21 && points[1] <= 21)
+        else if (points[0] <= this.currentTarget && points[1] <= this.currentTarget)
             return points[0] > points[1] ? 0 : 1
         else
             return points[0] < points[1] ? 0 : 1
-
     }
 
     getGameState = (filter: number): GameState => {
